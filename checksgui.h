@@ -10,6 +10,7 @@
 
 #include <QMainWindow>
 #include <QClipboard>
+#include <QCryptographicHash>
 
 #include "checksum.h"
 
@@ -26,6 +27,8 @@ public:
 
     ~checksgui();
 
+    QString checksum_file(const QString& file_name,
+                          QCryptographicHash::Algorithm type) noexcept;
 private slots:
     void on_dialog_button_clicked();
 

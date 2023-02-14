@@ -27,6 +27,35 @@ checksgui::~checksgui()
     delete this->ui;
 }
 
+QString checksgui::checksum_file(const QString& file_name,
+                                 QCryptographicHash::Algorithm algorithm) noexcept
+{
+    QFile sourceFile(file_name);
+    qint64 fileSize = sourceFile.size();
+    const qint64 bufferSize = 10240;
+
+    if(sourceFile.open(QIODevice::ReadOnly))
+    {
+        char buffer[bufferSize];
+        int bytesRead;
+        int readSize = qMin(fileSize, bufferSize);
+
+        QCryptographicHash hash(algorithm);
+
+        while(readSize > 0 && (bytesRead = sourceFile.read(buffer, readSize)) > 0)
+        {
+            fileSize -= bytesRead;
+            hash.addData(buffer, bytesRead);
+            readSize = qMin(fileSize, bufferSize);
+        }
+
+        sourceFile.close();
+
+        return QString(hash.result().toHex());
+    }
+
+    return QString("");
+}
 
 void checksgui::on_dialog_button_clicked()
 {
@@ -37,29 +66,38 @@ void checksgui::on_dialog_button_clicked()
 
     this->setWindowTitle(QString("checksgui - %1").arg(this->file_name));
 
-    QFile file(this->file_name);
+    if(!this->ui->md4_skip->isChecked())
+        this->ui->md4_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Md4));
 
-    if(!file.open(QIODevice::ReadOnly))
-    {
-        this->file_name.clear();
-        return;
-    }
+    if(!this->ui->md5_skip->isChecked())
+        this->ui->md5_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Md5));
 
-    QByteArray file_data = file.readAll();
+    if(!this->ui->sha1_skip->isChecked())
+        this->ui->sha1_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha1));
 
-    this->ui->md4_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Md4).toHex()));
-    this->ui->md5_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Md5).toHex()));
+    if(!this->ui->sha224_skip->isChecked())
+        this->ui->sha224_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha224));
 
-    this->ui->sha1_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha1).toHex()));
-    this->ui->sha224_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha224).toHex()));
-    this->ui->sha256_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha256).toHex()));
-    this->ui->sha384_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha384).toHex()));
-    this->ui->sha512_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha512).toHex()));
+    if(!this->ui->sha256_skip->isChecked())
+        this->ui->sha256_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha256));
 
-    this->ui->sha3_224_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha3_224).toHex()));
-    this->ui->sha3_256_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha3_256).toHex()));
-    this->ui->sha3_384_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha3_384).toHex()));
-    this->ui->sha3_512_line->setText(QString(QCryptographicHash::hash(file_data.toStdString(), QCryptographicHash::Sha3_512).toHex()));
+    if(!this->ui->sha384_skip->isChecked())
+        this->ui->sha384_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha384));
+
+    if(!this->ui->sha512_skip->isChecked())
+        this->ui->sha512_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha512));
+
+    if(!this->ui->sha3_224_skip->isChecked())
+        this->ui->sha3_224_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha3_224));
+
+    if(!this->ui->sha3_256_skip->isChecked())
+        this->ui->sha3_256_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha3_256));
+
+    if(!this->ui->sha3_384_skip->isChecked())
+        this->ui->sha3_384_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha3_384));
+
+    if(!this->ui->sha3_512_skip->isChecked())
+        this->ui->sha3_512_line->setText(this->checksum_file(this->file_name, QCryptographicHash::Sha3_512));
 }
 
 
